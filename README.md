@@ -1,12 +1,12 @@
 # impactjs-eventchain
 
-A function to help script sequential events in [ImpactJS][].
+__Note: This is a fork of David Hayes impactjs-eventchain__
 
-[![Build Status](https://travis-ci.org/drhayes/impactjs-eventchain.png?branch=master)](https://travis-ci.org/drhayes/impactjs-eventchain)
+A plugin to script sequential events in ImpactJS.
 
 ## Overview
 
-Use an EventChain where you would normally use `ig.system.tick` and a bunch of counters to try and time a scripted series of events. Each link in the chain is a step in your script.
+Use ig.Sequence where you would normally use `ig.system.tick` and a bunch of counters to try and time a scripted series of events. Each link in the chain is a step in your script.
 
 A few concrete examples:
 
@@ -14,32 +14,24 @@ A few concrete examples:
   * Time a player respawn: player dies, wait 3 seconds, spawn player entity: `then(this.kill).wait(3).then(function() { ig.game.spawnEntity...; })`
   * Make a crumbling platform that wobbles every once in a while before `kill`ing itself: `wait(0.3).then(this.wobble).wait(0.3).then(this.wobble).wait(0.3).then(this.kill)`
 
-Be sure to check out my [blog post][blogpost] explaining the rationale behind this class.
-
 ## Install
 
-  1. Download eventChain.js (either by [downloading it directly][download] or by cloning the repo).
-  2. EventChain's module is declared as `game.system.eventChain`, so you need to create a `system` directory inside the `lib/game` directory of your game.
-  3. Copy eventChain.js to your new `lib/game/system` directory.
-
-To use EventChain in your code, add its full name to the `require` statement in the module you're using it in, like this:
+To use ig.Sequence in your code, add its full name to the `require` statement in the module you're using it in, like this:
 
     .require(
        // ... other modules go here ...
-       'game.system.eventChain'
+       'plugins.sequence.manager'
     ).define(//...
-
-You should be all set.
 
 ## Usage
 
-`EventChain` has one optional parameter: the context in which it should execute the callbacks. That way, you can write `.then(this.kill)` and the chain will Do The Right Thing. If you don't need any special context, don't pass in that param.
+`ig.Sequence` has one optional parameter: the context in which it should execute the callbacks. That way, you can write `.then(this.kill)` and the chain will Do The Right Thing. If you don't need any special context, don't pass in that param.
 
-You probably want to create an `EventChain` in the `init` method of an entity:
+You probably want to create an `ig.Sequence` in the `init` method of an entity:
 
     init: function(x, y, settings) {
       this.parent(x, y, settings);
-      this.chain = EventChain(this)
+      this.chain = ig.Sequence(this)
         .wait(10)           // Wait for 10 seconds...
         .then(function() {  // ...then spawn a baddie...
             ig.game.spawnEntity('EntityKillerThing', 10, 10);
@@ -64,24 +56,7 @@ Event chains are also re-usable. After the last step of your chain, call the met
 
 The chain will begin again from the first step and proceed down the links.
 
-## Mixins
-
-If `EventChain` in its current form doesn't suit your needs, you can mixin a new function that will be part of every subsequent `EventChain` you create.
-
-For example, say you wanted to add a `forever` function. You want to be able to do something like this: `eventChain.forever().orUntil(...)`. You can mixin that function like so:
-
-    EventChain.mixin('forever', function(context, steps) {
-      return function() {
-        steps.push(function() {});
-        return this;
-      };
-    });
-
-All the core methods of `EventChain` are "built-in" mixins.
-
 ## Available Methods
-
-Here's what the chain can do for you.
 
 ### `then`
 
@@ -132,35 +107,6 @@ Much like `during`, only useful when used after a `wait`. Every `numberOfSeconds
     .orUntil(predicate)
 
 `predicate` is a function that returns `true` or `false`. Only useful when used after a `wait`. Will "break" the wait if the `predicate` returns `true`.
-
-### `waitForAnimation`
-
-    .waitForAnimation([animation, ][, times])
-
-`animation` is an instance of ImpactJS' [Animation][] type. `times` is a number of times for the animation to
-repeat. Both are optional. You can call `waitForAnimation` like this:
-
-    var chain = EventChain(this)
-      .waitForAnimation()
-      .then(function() {});
-
-...and, assuming `this` refers to an instance of Entity, it will wait for the current animation to complete.
-
-You can also do this:
-
-    var chain = EventChain()
-      .waitForAnimation(randomAnimation, 3)
-      .then(function() {});
-
-...which will wait for `randomAnimation` to run 3 times before continuing on.
-
-You can also do this:
-
-    var chain = EventChain(this)
-      .waitForAnimation(42)
-      .then(function() {});
-
-...which will wait for the `currentAnim` to play 42 times before continuing.
 
 ## License
 

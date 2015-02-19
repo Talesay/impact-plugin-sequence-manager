@@ -1,1 +1,16 @@
-node_modules/
+# GitEye project file
+/.project
+
+# Markdox output
+output.md
+
+# Os & Process detritus
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+.dropbox
+
+# Brackets settings
+.brackets.json
